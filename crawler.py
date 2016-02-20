@@ -1,3 +1,10 @@
+import time
+
+def time_execution(code):
+	start = time.clock()
+	result = eval(code)
+	run_time = time.clock() - start
+	return result, run_time
 
 def get_next_target(page):
 	start_link = page.find('<a href=')
@@ -36,7 +43,7 @@ def get_page(url):
 def crawl_web(seed, depth):
 	crawled = []
 	to_crawl = [seed]
-	index = []
+	index = {}
 	while to_crawl:
 		page = to_crawl.pop()
 		if page not in crawled:
@@ -47,24 +54,32 @@ def crawl_web(seed, depth):
 	return index
 
 def add_to_index(index, keyword, url):
-	for entry in index:
-		if entry[0] == keyword
-			entry[1].append(url)
-			return
-	index.append([keyword,[url]])
+	if keyword in index:
+		index[keyword].append(url)
+	else:
+		index[keyword] = [url]
 
 def lookup(index, keyword):
-	for entry in index:
-		if entry[0]==keyword:
-			return entry[1]
-    return []
+	if keyword in index:
+		return index[keyword]
+	else:
+		return None
 
 def add_page_to_index(index, url, content):
 	words = content.split()
 	for item in words:
-		for entry in index:
-			if entry[0] == item:
-				entry[1].append(url)
-				return
-		index.append([item, [url]])
+		add_to_index(index, item, url)
 
+def make_big_index(size):
+	index = []
+	letters = ['a', 'a', 'a', 'a', 'a', 'a', 'a']
+	while len(index) < size:
+		word = make_string(letters)
+		add_to_index(index, word, 'fake')
+		for i in range(len(letters) - 1, 0, -1):
+			if letters[i] < 'z':
+				letters[i] = chr(ord(letters[i]) + 1)
+				break
+			else:
+				letters[i] = 'a'
+	return index
