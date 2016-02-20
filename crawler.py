@@ -40,18 +40,21 @@ def get_page(url):
 	except:
 		return ""
 
-def crawl_web(seed, depth):
+def crawl_web(seed):
 	crawled = []
 	to_crawl = [seed]
 	index = {}
+	graph = {}
 	while to_crawl:
 		page = to_crawl.pop()
 		if page not in crawled:
 			content = get_page(page)
 			add_page_to_index(index, page, content)
+			outlinks = get_all_links(content)
+			graph[page] = outlinks
+			union(to_crawl, outlinks)
 			crawled.append(page)
-			union(to_crawl, get_all_links(content))
-	return index
+	return index, graph
 
 def add_to_index(index, keyword, url):
 	if keyword in index:
@@ -83,3 +86,28 @@ def make_big_index(size):
 			else:
 				letters[i] = 'a'
 	return index
+
+def computing_ranks(graph):
+	d = 0.8
+	numLoops = 10
+
+	ranks = {}
+	npages = len(graph)
+	for page in graph:
+		ranks[page] = 1.0 / npages;
+
+	for i in range(0, numLoops):
+		newranks = {}
+		for page in graph:
+			points = (1 - d) / npages
+			for node in graph:
+				if page in graph[node]:
+					points = points + d * (ranks[node])
+			newranks[page] = points
+		ranks = newranks
+	return ranks
+
+index, graph = crawl_web("http://home.ustc.edu.cn/~sa614220/")
+ranks = computing_ranks(graph)
+print ranks
+
